@@ -16,6 +16,6 @@ module.exports = function (cb) {
     var to = setTimeout(function () {
         cb(null, bytes / 3);
         cb = function () {};
-    }, 3000);
+    }, 3001);
     return s;
 };
