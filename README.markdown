@@ -3,6 +3,8 @@ brake
 
 Throttle a stream with backpressure.
 
+[![build status](https://secure.travis-ci.org/substack/node-brake.png)](http://travis-ci.org/substack/node-brake)
+
 example
 =======
 
