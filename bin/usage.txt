@@ -1,0 +1,18 @@
+usage:
+    
+    brake [rate] {period} OPTIONS
+    brake OPTIONS
+
+OPTIONS:
+
+  -r, --rate     How many bytes to emit for each interval of length `period`
+  
+  -p, --period   How often to check the output length in milliseconds.
+                 default value: 1000
+
+  -s, --smooth   If set, set the rate to 1 and divide the period by the rate.
+                 Defaults to `true` when period is not specified.
+
+  -m, --maxsize  If set, throw an error if the total size of the pending writes
+                 exceed this value
+
