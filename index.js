@@ -9,7 +9,10 @@ module.exports = function (rate, opts) {
         rate = opts.rate;
     }
     
-    if (!opts.period) opts.period = 1000;
+    if (!opts.period) {
+        if (opts.smooth === undefined) opts.smooth = true;
+        opts.period = 1000;
+    }
     
     if (rate < 1 && rate > 0) {
         opts.period /= rate;
@@ -17,10 +20,15 @@ module.exports = function (rate, opts) {
     }
     opts.rate = rate;
     
-    return new Limit(opts);
+    if (opts.smooth) {
+        opts.period /= rate;
+        opts.rate = 1;
+    }
+    
+    return new Brake(opts);
 };
 
-function Limit (opts) {
+function Brake (opts) {
     Stream.call(this);
     this.writable = true;
     this.readable = true;
@@ -37,9 +45,9 @@ function Limit (opts) {
     }.bind(this), opts.period);
 }
 
-util.inherits(Limit, Stream);
+util.inherits(Brake, Stream);
 
-Limit.prototype.checkSize = function () {
+Brake.prototype.checkSize = function () {
     if (!this.maxSize) return;
     if (this.pendingSize > this.maxSize) {
         var err = new Error('maximum buffer size exceeded');
@@ -48,7 +56,7 @@ Limit.prototype.checkSize = function () {
     }
 };
 
-Limit.prototype.check = function () {
+Brake.prototype.check = function () {
     if (this._paused) return;
     if (this.sent === this.rate) return;
     var pending = this.pending;
@@ -87,7 +95,7 @@ Limit.prototype.check = function () {
     }
 };
 
-Limit.prototype.write = function (msg) {
+Brake.prototype.write = function (msg) {
     if (!this.writable) {
         var err = new Error('stream not writable');
         err.code = 'EPIPE';
@@ -119,16 +127,16 @@ Limit.prototype.write = function (msg) {
     }
 };
 
-Limit.prototype.pause = function () {
+Brake.prototype.pause = function () {
     this._paused = true;
 };
 
-Limit.prototype.resume = function () {
+Brake.prototype.resume = function () {
     this._paused = false;
     this.check();
 };
 
-Limit.prototype.destroy = function () {
+Brake.prototype.destroy = function () {
     clearInterval(this.interval);
     this._destroyed = true;
     this.writable = false;
@@ -136,7 +144,7 @@ Limit.prototype.destroy = function () {
     this.emit('end');
 };
 
-Limit.prototype.end = function (msg) {
+Brake.prototype.end = function (msg) {
     if (msg !== undefined) return this.write(msg);
     this._ended = true;
     this.writable = false;

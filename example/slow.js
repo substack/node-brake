@@ -1,5 +1,5 @@
 var Stream = require('stream');
-var throttle = require('../');
+var brake = require('../');
 
 var bulk = (function () {
     var s = new Stream;
@@ -17,12 +17,12 @@ var bulk = (function () {
         return setInterval(function () {
             s.emit('data', String(x));
             x = x ^ 1;
-        }, 10);
+        }, 5);
     }
     return s;
 })();
 
 bulk
-    .pipe(throttle(0.5))
+    .pipe(brake(10))
     .pipe(process.stdout, { end : false })
 ;
