@@ -13,6 +13,7 @@ function createReadStream (n) {
     };
     s.end = function () {
         clearInterval(iv);
+        s.emit('end');
     };
     
     var iv = createInterval();
@@ -41,6 +42,7 @@ function pv (cb) {
     
     var to = setTimeout(function () {
         cb(null, bytes / 3);
+        cb = function () {};
     }, 3000);
     return s;
 }
