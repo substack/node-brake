@@ -3,7 +3,9 @@
     "version" : "0.0.0",
     "description" : "throttle a stream with backpressure",
     "main" : "index.js",
-    "bin" : {},
+    "bin" : {
+        "brake" : "bin/cmd.js"
+    },
     "directories" : {
         "example" : "example",
         "test" : "test"

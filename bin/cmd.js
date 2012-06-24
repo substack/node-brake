@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 var brake = require('../');
 var argv = require('optimist')
-    .boolean('smooth')
     .alias('r', 'rate')
     .alias('p', 'period')
     .alias('s', 'smooth')
