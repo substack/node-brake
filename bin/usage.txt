@@ -1,7 +1,8 @@
 usage:
     
-    brake [rate] {period} OPTIONS
-    brake OPTIONS
+    brake OPTIONS [rate] {file | -}
+    brake OPTIONS [rate] [period] {file | -}
+    brake OPTIONS {file | -}
 
 OPTIONS:
 
