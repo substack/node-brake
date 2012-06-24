@@ -41,6 +41,18 @@ bulk
 ;
 ```
 
+There's also a `brake` command as part of this package:
+
+```
+$ brake 30 README.markdown
+brake
+=====
+
+Throttle a stream with backpressure.
+
+[![build status](http^C
+```
+
 methods
 =======
 
@@ -80,14 +92,40 @@ called.
 
 Un-pause a stream, triggering the interval to see if data can be emitted.
 
+command-line usage
+==================
+
+```
+usage:
+    
+    brake OPTIONS [rate] {file | -}
+    brake OPTIONS [rate] [period] {file | -}
+    brake OPTIONS {file | -}
+
+OPTIONS:
+
+  -r, --rate     How many bytes to emit for each interval of length `period`
+  
+  -p, --period   How often to check the output length in milliseconds.
+                 default value: 1000
+
+  -s, --smooth   If set, set the rate to 1 and divide the period by the rate.
+                 Defaults to `true` when period is not specified.
+
+  -m, --maxsize  If set, throw an error if the total size of the pending writes
+                 exceed this value
+```
+
 install
 =======
 
-With [npm](http://npmjs.org) do:
+To get the library, with [npm](http://npmjs.org) do:
 
-```
-npm install brake
-```
+    npm install brake
+
+To get the command, with [npm](http://npmjs.org) do:
+
+    npm install -g brake
 
 license
 =======
