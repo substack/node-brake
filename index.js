@@ -8,8 +8,15 @@ module.exports = function (rate, opts) {
         opts = rate;
         rate = opts.rate;
     }
-    opts.rate = rate;
+    
     if (!opts.period) opts.period = 1000;
+    
+    if (rate < 1 && rate > 0) {
+        opts.period /= rate;
+        rate = 1;
+    }
+    opts.rate = rate;
+    
     return new Limit(opts);
 };
 

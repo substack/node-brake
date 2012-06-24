@@ -23,6 +23,6 @@ var bulk = (function () {
 })();
 
 bulk
-    .pipe(throttle(1, 100))
+    .pipe(throttle(0.5))
     .pipe(process.stdout, { end : false })
 ;
