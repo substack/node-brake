@@ -25,17 +25,27 @@ function Brake (rate, opts) {
 Brake.prototype._transform = function (buf, enc, next) {
     var self = this;
     var index = 0;
+    var delay = this.period / this.rate;
+    this._iv = setInterval(advance, delay);
+    advance();
     
-    var iv = setInterval(function () {
+    function advance () {
+        if (this._destroyed) return clearInterval(self._iv);
         self.push(buf.slice(index, index+1));
         if (++ index === buf.length) {
-            clearInterval(iv);
-            next();
+            clearInterval(self._iv);
+            setTimeout(next, delay);
         }
-    }, this.period / this.rate);
+    }
 };
 
 Brake.prototype._flush = function (next) {
+    clearInterval(this._iv);
     this.push(null);
     next();
+};
+
+Brake.prototype.destroy = function () {
+    clearInterval(this._iv);
+    this._destroyed = true;
 };

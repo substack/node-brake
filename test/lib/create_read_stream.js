@@ -9,13 +9,10 @@ module.exports = function (n) {
         s.push(null);
     };
     
-    var iv = createInterval();
     var x = 0;
-    function createInterval () {
-        return setInterval(function () {
-            s.push(String(x));
-            x = x ^ 1;
-        }, n);
-    }
+    var iv = setInterval(function () {
+        s.push(String(x));
+        x = x ^ 1;
+    }, 1000/n);
     return s;
 };
