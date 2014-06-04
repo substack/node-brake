@@ -17,11 +17,22 @@ function Brake (rate, opts) {
     }
     
     this.rate = rate;
+    this.period = opts.period || 1000;
+    this.since = null;
+    this.bytes = 0;
 }
 
 Brake.prototype._transform = function (buf, enc, next) {
-    this.push(buf);
-    next();
+    var self = this;
+    var index = 0;
+    
+    var iv = setInterval(function () {
+        self.push(buf.slice(index, index+1));
+        if (++ index === buf.length) {
+            clearInterval(iv);
+            next();
+        }
+    }, this.period / this.rate);
 };
 
 Brake.prototype._flush = function (next) {
