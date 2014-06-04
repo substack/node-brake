@@ -31,5 +31,4 @@ else {
         .pipe(brake(argv))
         .pipe(process.stdout)
     ;
-    process.stdin.resume();
 }
