@@ -26,10 +26,10 @@ function Brake (rate, opts) {
         self.bytes = 0;
         self.since = Date.now();
     }, this.period);
-    
 }
 
 Brake.prototype._transform = function (buf, enc, next) {
+    if (buf.length === 0) return next();
     var self = this;
     var index = 0;
     var delay = this.period / this.rate;
@@ -49,12 +49,15 @@ Brake.prototype._transform = function (buf, enc, next) {
         var n = Math.round(self.bucket);
         self.bucket -= n;
         
-        var b = buf.slice(index, index + 1 + n);
+        var factor = Math.max(1, self.rate / 15);
+        
+        if (n < 0) return;
+        var b = buf.slice(index, Math.min(buf.length, index + 1 + n * factor));
         self.push(b);
         self.bytes += b.length;
         
         index += b.length;
-        if (index === buf.length) {
+        if (index >= buf.length) {
             clearInterval(self._iv);
             setTimeout(next, delay);
         }
