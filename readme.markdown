@@ -25,7 +25,7 @@ There's also a `brake` command as part of this package:
 
 ```
 $ brake 30 readme.markdown | pv > /dev/null
-
+1.53kB 0:00:51 [30.3B/s] [                                       <=>   ]
 ```
 
 # methods
