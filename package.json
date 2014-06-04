@@ -1,46 +1,43 @@
 {
-    "name" : "brake",
-    "version" : "0.1.1",
-    "description" : "throttle a stream with backpressure",
-    "main" : "index.js",
-    "bin" : {
-        "brake" : "bin/cmd.js"
-    },
-    "directories" : {
-        "example" : "example",
-        "test" : "test"
-    },
-    "dependencies" : {
-        "optimist": "~0.6.0"
-    },
-    "devDependencies" : {
-        "tap" : "~0.2.5"
-    },
-    "scripts" : {
-        "test" : "tap test/*.js"
-    },
-    "repository" : {
-        "type" : "git",
-        "url" : "git://github.com/substack/node-brake.git"
-    },
-    "homepage" : "https://github.com/substack/node-brake",
-    "keywords" : [
-        "rate",
-        "limit",
-        "stream",
-        "back-pressure",
-        "drain",
-        "pause",
-        "resume",
-        "pipe",
-        "slow",
-        "buffered"
-    ],
-    "author" : {
-        "name" : "James Halliday",
-        "email" : "mail@substack.net",
-        "url" : "http://substack.net"
-    },
-    "license" : "MIT",
-    "engine" : { "node" : ">=0.6" }
+  "name": "brake",
+  "version": "1.0.1",
+  "description": "throttle a stream with backpressure",
+  "main": "index.js",
+  "bin": {
+    "brake": "bin/cmd.js"
+  },
+  "dependencies": {
+    "minimist": "~0.1.0",
+    "inherits": "~2.0.1",
+    "readable-stream": "~1.0.27-1"
+  },
+  "devDependencies": {
+    "tap": "~0.4.9"
+  },
+  "scripts": {
+    "test": "tap test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/substack/node-brake.git"
+  },
+  "homepage": "https://github.com/substack/node-brake",
+  "keywords": [
+    "rate",
+    "limit",
+    "stream",
+    "back-pressure",
+    "drain",
+    "pause",
+    "resume",
+    "pipe",
+    "slow",
+    "buffered"
+  ],
+  "author": {
+    "name": "James Halliday",
+    "email": "mail@substack.net",
+    "url": "http://substack.net"
+  },
+  "license": "MIT"
 }

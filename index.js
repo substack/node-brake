@@ -1,7 +1,14 @@
-var Stream = require('stream');
-var util = require('util');
+var Transform = require('readable-stream').Transform;
+var inherits = require('inherits');
 
-module.exports = function (rate, opts) {
+module.exports = Brake;
+inherits(Brake, Transform);
+
+function Brake (rate, opts) {
+    var self = this;
+    if (!(this instanceof Brake)) return new Brake(rate, opts);
+    Transform.call(this);
+    
     if (!opts) opts = {};
     if (typeof opts === 'number') opts = { period : opts };
     if (typeof rate === 'object') {
@@ -9,143 +16,63 @@ module.exports = function (rate, opts) {
         rate = opts.rate;
     }
     
-    if (!opts.period) {
-        if (opts.smooth === undefined) opts.smooth = true;
-        opts.period = 1000;
-    }
+    this.rate = rate;
+    this.period = opts.period || 1000;
     
-    if (rate < 1 && rate > 0) {
-        opts.period /= rate;
-        rate = 1;
-    }
-    opts.rate = rate;
+    this.bytes = 0;
+    this.bucket = 0;
     
-    if (opts.smooth) {
-        opts.period /= rate;
-        opts.rate = 1;
-    }
-    
-    return new Brake(opts);
-};
-
-function Brake (opts) {
-    Stream.call(this);
-    this.writable = true;
-    this.readable = true;
-    
-    this.pending = [];
-    this.pendingSize = 0;
-    this.sent = 0;
-    this.rate = opts.rate;
-    this.maxSize = opts.maxSize;
-    
-    this.interval = setInterval(function () {
-        this.sent = 0;
-        this.check();
-    }.bind(this), opts.period);
+    this._check = setInterval(function () {
+        self.bytes = 0;
+        self.since = Date.now();
+    }, this.period);
 }
 
-util.inherits(Brake, Stream);
-
-Brake.prototype.checkSize = function () {
-    if (!this.maxSize) return;
-    if (this.pendingSize > this.maxSize) {
-        var err = new Error('maximum buffer size exceeded');
-        err.code = 'MAXSIZE';
-        this.emit('error', err);
-    }
-};
-
-Brake.prototype.check = function () {
-    if (this._paused) return;
-    if (this.sent === this.rate) return;
-    var pending = this.pending;
-    var sent0 = this.sent;
+Brake.prototype._transform = function (buf, enc, next) {
+    if (buf.length === 0) return next();
+    var self = this;
+    var index = 0;
+    var delay = this.period / this.rate;
+    this._iv = setInterval(advance, delay);
+    if (!this.since) this.since = Date.now();
+    advance();
     
-    for (var i = 0; i < pending.length; i++) {
-        var msg = pending[i];
+    function advance () {
+        if (this._destroyed) return clearInterval(self._iv);
         
-        if (this.sent + msg.length < this.rate) {
-            this.sent += msg.length;
-            this.emit('data', msg);
+        var now = Date.now();
+        var elapsed = now - self.since;
+        
+        if (elapsed > 0) {
+            self.bucket += self.rate / self.period - self.bytes / elapsed;
         }
-        else {
-            var n = Math.max(0, this.rate - this.sent);
-            this.sent += n;
-            if (n > 0) {
-                this.emit('data', msg.slice(0, n));
-                pending.splice(i + 1, 0, msg.slice(n));
-                this.pendingSize += msg.length - n;
-                if (this.maxSize) this.checkSize();
-            }
-            break;
+        var n = Math.round(self.bucket);
+        self.bucket -= n;
+        
+        var factor = Math.max(1, self.rate / 16);
+        
+        if (n < 0) return;
+        var b = buf.slice(index, Math.min(buf.length, index + 1 + n * factor));
+        self.push(b);
+        self.bytes += b.length;
+        
+        index += b.length;
+        if (index >= buf.length) {
+            clearInterval(self._iv);
+            setTimeout(next, delay);
         }
-    }
-    pending.splice(0, i + 1);
-    this.pendingSize += this.sent - sent0;
-    
-    if (this._full && pending.length === 0) {
-        this.emit('drain');
-        this._full = false;
-    }
-    if (this._ended && pending.length === 0) {
-        clearInterval(this.interval);
-        this.readable = false;
-        this.emit('end');
     }
 };
 
-Brake.prototype.write = function (msg) {
-    if (!this.writable) {
-        var err = new Error('stream not writable');
-        err.code = 'EPIPE';
-        this.emit('error', err);
-        return false;
-    }
-    if (this._paused || this._full) {
-        this.pending.push(msg);
-        this.pendingSize += msg.length;
-        if (this.maxSize) this.checkSize();
-        return false;
-    }
-    
-    if (this.sent + msg.length < this.rate) {
-        this.emit('data', msg);
-        this.sent += msg.length;
-    }
-    else {
-        var n = Math.max(0, this.rate - this.sent);
-        this.sent += n;
-        if (n > 0) {
-            this.emit('data', msg.slice(0, n));
-            this.pending.push(msg.slice(n));
-            this.pendingSize += msg.length - n;
-            if (this.maxSize) this.checkSize();
-        }
-        this._full = true;
-        return false;
-    }
-};
-
-Brake.prototype.pause = function () {
-    this._paused = true;
-};
-
-Brake.prototype.resume = function () {
-    this._paused = false;
-    this.check();
+Brake.prototype._flush = function (next) {
+    clearInterval(this._iv);
+    clearInterval(this._check);
+    this.push(null);
+    next();
 };
 
 Brake.prototype.destroy = function () {
-    clearInterval(this.interval);
+    clearInterval(this._iv);
+    clearInterval(this._check);
     this._destroyed = true;
-    this.writable = false;
-    this.readable = false;
-    this.emit('end');
-};
-
-Brake.prototype.end = function (msg) {
-    if (msg !== undefined) return this.write(msg);
-    this._ended = true;
-    this.writable = false;
 };

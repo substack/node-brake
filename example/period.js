@@ -7,4 +7,4 @@ bulk._read = function () {};
 bulk.push(Array(1001).join('A'));
 bulk.push(null);
 
-bulk.pipe(brake(10)).pipe(process.stdout);
+bulk.pipe(brake(3, 20)).pipe(process.stdout);
