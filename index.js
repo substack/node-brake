@@ -20,7 +20,6 @@ function Brake (rate, opts) {
     this.period = opts.period || 1000;
     
     this.bytes = 0;
-    this.since = Date.now();
     this.bucket = 0;
     
     this._check = setInterval(function () {
@@ -35,6 +34,7 @@ Brake.prototype._transform = function (buf, enc, next) {
     var index = 0;
     var delay = this.period / this.rate;
     this._iv = setInterval(advance, delay);
+    if (!this.since) this.since = Date.now();
     advance();
     
     function advance () {
