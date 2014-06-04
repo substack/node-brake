@@ -1,13 +1,15 @@
 {
   "name": "brake",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "throttle a stream with backpressure",
   "main": "index.js",
   "bin": {
     "brake": "bin/cmd.js"
   },
   "dependencies": {
-    "minimist": "~0.1.0"
+    "minimist": "~0.1.0",
+    "inherits": "~2.0.1",
+    "readable-stream": "~1.0.27-1"
   },
   "devDependencies": {
     "tap": "~0.4.9"
