@@ -20,12 +20,14 @@ function Brake (rate, opts) {
     this.period = opts.period || 1000;
     
     this.bytes = 0;
-    this.factor = 0;
+    this.since = Date.now();
+    this.bucket = 0;
     
-    this._checker = setInterval(function () {
-        self.factor += self.rate - self.bytes;
+    this._check = setInterval(function () {
         self.bytes = 0;
+        self.since = Date.now();
     }, this.period);
+    
 }
 
 Brake.prototype._transform = function (buf, enc, next) {
@@ -37,11 +39,22 @@ Brake.prototype._transform = function (buf, enc, next) {
     
     function advance () {
         if (this._destroyed) return clearInterval(self._iv);
-        self.push(buf.slice(index, index + 1 + self.factor));
-        self.factor = 0;
         
-        self.bytes ++;
-        if (++ index === buf.length) {
+        var now = Date.now();
+        var elapsed = now - self.since;
+        
+        if (elapsed > 0) {
+            self.bucket += self.rate / self.period - self.bytes / elapsed;
+        }
+        var n = Math.round(self.bucket);
+        self.bucket -= n;
+        
+        var b = buf.slice(index, index + 1 + n);
+        self.push(b);
+        self.bytes += b.length;
+        
+        index += b.length;
+        if (index === buf.length) {
             clearInterval(self._iv);
             setTimeout(next, delay);
         }
@@ -50,13 +63,13 @@ Brake.prototype._transform = function (buf, enc, next) {
 
 Brake.prototype._flush = function (next) {
     clearInterval(this._iv);
-    clearInterval(this._checker);
+    clearInterval(this._check);
     this.push(null);
     next();
 };
 
 Brake.prototype.destroy = function () {
     clearInterval(this._iv);
-    clearInterval(this._checker);
+    clearInterval(this._check);
     this._destroyed = true;
 };
