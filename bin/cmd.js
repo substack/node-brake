@@ -2,14 +2,11 @@
 var brake = require('../');
 var fs = require('fs');
 
-var argv = require('optimist')
-    .alias('r', 'rate')
-    .alias('p', 'period')
-    .alias('s', 'smooth')
-    .alias('m', 'maxSize')
-    .alias('maxsize', 'maxSize')
-    .argv
-;
+var minimist = require('minimist')
+var argv = minimist(process.argv.slice(2), {
+    alias: { r: 'rate', p: 'period' }
+});
+
 if (!argv.rate) argv.rate = argv._.shift();
 if (!argv.rate) {
     return fs.createReadStream(__dirname + '/usage.txt')
