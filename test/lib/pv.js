@@ -1,17 +1,18 @@
-var Stream = require('stream');
+var Writable = require('readable-stream').Writable;
 
 module.exports = function (cb) {
-    var s = new Stream;
-    s.writable = true;
+    var s = new Writable;
     
     var bytes = 0;
-    s.write = function (buf) {
+    s._write = function (buf, enc, next) {
         bytes += buf.length;
+        next();
     };
-    s.end = function () {
+    
+    s.once('finish', function () {
         clearTimeout(to);
         cb('stream ended');
-    };
+    });
     
     var to = setTimeout(function () {
         cb(null, bytes / 3);

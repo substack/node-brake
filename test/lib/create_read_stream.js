@@ -1,24 +1,19 @@
-var Stream = require('stream');
+var Readable = require('readable-stream').Readable;
 
 module.exports = function (n) {
-    var s = new Stream;
-    s.readable = true
-    s.pause = function () {
-        clearInterval(iv);
-    };
-    s.resume = function () {
-        iv = createInterval();
-    };
+    var s = new Readable;
+    s._read = function () {};
+    
     s.end = function () {
         clearInterval(iv);
-        s.emit('end');
+        s.push(null);
     };
     
     var iv = createInterval();
     var x = 0;
     function createInterval () {
         return setInterval(function () {
-            s.emit('data', String(x));
+            s.push(String(x));
             x = x ^ 1;
         }, n);
     }
