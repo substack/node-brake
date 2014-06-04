@@ -1,28 +1,12 @@
-var Stream = require('stream');
+var Readable = require('readable-stream').Readable;
 var brake = require('../');
 
-var bulk = (function () {
-    var s = new Stream;
-    s.readable = true
-    s.pause = function () {
-        clearInterval(iv);
-    };
-    s.resume = function () {
-        iv = createInterval();
-    };
-    
-    var iv = createInterval();
-    var x = 0;
-    function createInterval () {
-        return setInterval(function () {
-            s.emit('data', String(x));
-            x = x ^ 1;
-        }, 5);
-    }
-    return s;
-})();
+var bulk = new Readable;
+bulk._read = function () {};
 
-bulk
-    .pipe(brake(10))
-    .pipe(process.stdout, { end : false })
-;
+for (var i = 0; i < 1000; i++) {
+    bulk.push(String(i % 2));
+}
+bulk.push(null);
+
+bulk.pipe(brake(10)).pipe(process.stdout);

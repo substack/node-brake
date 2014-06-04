@@ -1,7 +1,7 @@
 var Transform = require('readable-stream').Transform;
 var inherits = require('inherits');
 
-module.exports = Break;
+module.exports = Brake;
 inherits(Brake, Transform);
 
 function Brake (rate, opts) {
