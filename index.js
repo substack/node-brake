@@ -49,7 +49,7 @@ Brake.prototype._transform = function (buf, enc, next) {
         var n = Math.round(self.bucket);
         self.bucket -= n;
         
-        var factor = Math.max(1, self.rate / 15);
+        var factor = Math.max(1, self.rate / 16);
         
         if (n < 0) return;
         var b = buf.slice(index, Math.min(buf.length, index + 1 + n * factor));
